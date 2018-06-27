@@ -45,8 +45,9 @@ namespace SpiderAPI.Models
         public int ScrapySettingId { get; set; }
         public int SpiderStartUrlsId { get; set; }
         public string Status { get; set; }
-
+        [Write(false)]
         public ScrapySetting ScrapySetting { get; set; }
+        [Write(false)]
         public ScrapySetting SpiderStartUrls { get; set; }
 
         public SpiderBasic()
@@ -96,7 +97,7 @@ namespace SpiderAPI.Models
     [Table("spider_start_urls")]
     public class SpiderStartUrls : BaseModel
     {
-        //[Write(false)]
+        [Write(false)]
         new public string Name { get; set; }
         public string Params { get; set; }
         public string Url { get; set; }
@@ -107,7 +108,7 @@ namespace SpiderAPI.Models
     /// </summary>
     public class Result
     {
-        public List<dynamic> Data { get; set; } = new List<dynamic>();
+        public IEnumerable<dynamic> Data { get; set; } = new List<dynamic>();
         public bool Succeed { get; set; } = true;
         public string Message { get; set; } = "ok";
         public string StackTrace { get; set; } = "";
@@ -116,5 +117,12 @@ namespace SpiderAPI.Models
         /// </summary>
         public int Count { get; set; } = 0;
 
+    }
+
+    public class Condition
+    {
+        public int PageSize { get; set; } = 1;
+        public int PageIndex { get; set; } = 10;
+        public dynamic dynamic { get; set; }
     }
 }

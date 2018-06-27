@@ -28,11 +28,11 @@ namespace SpiderAPI.Controllers
             return conn;
         }
         [NonAction]
-        public Result TryAction(Func<Result> pFunc)
+        public async Task<Result> TryAction(Func<Task<Result>> pFunc)
         {
             try
             {
-                return pFunc();
+                return await pFunc();
             }
             catch (Exception exception)
             {
@@ -50,6 +50,6 @@ namespace SpiderAPI.Controllers
             }
         }
 
-        
+
     }
 }

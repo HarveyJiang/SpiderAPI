@@ -1,13 +1,14 @@
 ﻿
+using SpiderAPI.Models;
 using System.Collections.Generic;
 
-namespace RazorPagesExample.Repository
+namespace SpiderAPI.Repository
 {
     public interface IRepository<T> where T : class, new()
     {
         int Add(T model);
 
-        IEnumerator<T> GetList();
+        IEnumerator<T> GetList(Condition condition);
 
         T Get(int id);
 
@@ -15,6 +16,6 @@ namespace RazorPagesExample.Repository
 
         int Delete(int id);
 
-        
+        IEnumerator<T> Find(Condition condition);
     }
 }

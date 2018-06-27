@@ -8,7 +8,6 @@
   <ItemGroup>
     <Folder Include="wwwroot\" />
     <Folder Include="Business\" />
-    <Folder Include="Repository\" />
   </ItemGroup>
 
   <ItemGroup>

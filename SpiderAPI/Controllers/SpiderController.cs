@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
@@ -14,28 +15,31 @@ namespace SpiderAPI.Controllers
     [Route("api/[controller]/[action]")]
     public class SpiderController : BaseController
     {
-        public SpiderController(IConfiguration config) : base(config)
-        {
 
+        Repository.Repository<SpiderBasic> repository;
+        public SpiderController(IConfiguration configuration) : base(configuration)
+        {
+            repository = new Repository.Repository<SpiderBasic>(configuration);
         }
 
         // GET api/values
         [HttpGet]
-        public JsonResult Get()
+        public async Task<JsonResult> Get()
         {
-            Result result = TryAction(() =>
-             {
-                 using (var con = this.GetConnection())
-                 {
-                     con.Open();
-                     con.Insert(new SpiderStartUrls { Params = "124", Url = "baidul" });
-                     //var query = "InSERT INTO crawler_setting.spider_start_urls(Params, Url) VALUES(@Params, @Url);";
-                     //var count = con.Execute(query, new SpiderStartUrls() { Params = "124", Url = "baidul" });
-                     Result r = new Result();
-                     return r;
-                 }
-             });
-            return Json(result);
+            using (var con = new SqlConnection(connectionString))
+            {
+                Result result = new Result();
+                con.Open();
+                int t = await con.InsertAsync(new SpiderStartUrls()
+                {
+                    Params = "111",
+                    Url = "g.cn"
+                });
+                result.Message = t.ToString();
+                return Json(result);
+            }
+
+
 
         }
 
@@ -48,9 +52,14 @@ namespace SpiderAPI.Controllers
 
         // POST api/values
         [HttpPost]
-        public JsonResult Post([FromBody]string value)
+        public async Task<JsonResult> Post([FromBody]SpiderBasic model)
         {
-            return Json(base.connectionString);
+            var r = await TryAction(async () =>
+            {
+                return await repository.InsertAsync(model);
+            });
+
+            return Json(r);
         }
 
         // PUT api/values/5
