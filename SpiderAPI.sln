@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderAPI", "SpiderAPI\SpiderAPI.csproj", "{9F45A55C-016D-4917-B44E-4EBC776D4985}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{231B5B71-2D01-4772-A964-09F4C64C1EA7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F45A55C-016D-4917-B44E-4EBC776D4985}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F45A55C-016D-4917-B44E-4EBC776D4985}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F45A55C-016D-4917-B44E-4EBC776D4985}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F45A55C-016D-4917-B44E-4EBC776D4985}.Release|Any CPU.Build.0 = Release|Any CPU
+		{231B5B71-2D01-4772-A964-09F4C64C1EA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{231B5B71-2D01-4772-A964-09F4C64C1EA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{231B5B71-2D01-4772-A964-09F4C64C1EA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{231B5B71-2D01-4772-A964-09F4C64C1EA7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA638270-CF72-4E8A-A753-B8FE5A647875}
+	EndGlobalSection
+EndGlobal

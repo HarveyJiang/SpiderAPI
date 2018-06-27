@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  spiderapi:
+    image: ${DOCKER_REGISTRY}spiderapi
+    build:
+      context: .
+      dockerfile: SpiderAPI/Dockerfile
