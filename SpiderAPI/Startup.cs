@@ -39,6 +39,8 @@ namespace SpiderAPI
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "SPIDER API", Version = "v1", Description = "By Harvey" });
+                c.DescribeStringEnumsInCamelCase();
+                c.DescribeAllEnumsAsStrings();
             });
 
         }
@@ -62,6 +64,7 @@ namespace SpiderAPI
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "V1 Docs");
+                c.DocumentTitle = "Spider API v1";
                 c.DocExpansion(DocExpansion.None);
             });
 

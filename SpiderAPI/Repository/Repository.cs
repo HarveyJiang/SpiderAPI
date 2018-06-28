@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Dapper;
 using SpiderAPI.Models;
 using Dapper.Contrib.Extensions;
+using System.Data;
+using MySql.Data.MySqlClient;
 
 namespace SpiderAPI.Repository
 {
@@ -17,6 +19,13 @@ namespace SpiderAPI.Repository
         {
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
         }
+
+        public IDbConnection GetConnection()
+        {
+            var conn = new MySqlConnection(connectionString);
+            return conn;
+        }
+
 
         public Result TryAction(Func<Result> pFunc)
         {
@@ -43,7 +52,7 @@ namespace SpiderAPI.Repository
         public async Task<Result> InsertAsync(T model)
         {
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
                 int t = await con.InsertAsync(model);
@@ -55,7 +64,7 @@ namespace SpiderAPI.Repository
         public async Task<Result> DeleteAsync(T model)
         {
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
                 result.Succeed = await con.DeleteAsync(model);
@@ -66,7 +75,7 @@ namespace SpiderAPI.Repository
         public async Task<Result> DeleteAllAsync(T model)
         {
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
                 result.Succeed = await con.DeleteAllAsync<T>();
@@ -77,7 +86,7 @@ namespace SpiderAPI.Repository
         public async Task<Result> UpdateAsync(T model)
         {
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
                 result.Succeed = await con.UpdateAsync(model);
@@ -90,11 +99,12 @@ namespace SpiderAPI.Repository
 
             List<T> products = new List<T>();
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
                 var x = await con.GetAllAsync<T>();
-                result.Data = x.ToList();
+                if (x != null)
+                    result.Data = x.ToList();
                 return result;
             }
         }
@@ -102,10 +112,14 @@ namespace SpiderAPI.Repository
         public async Task<Result> Get(T model)
         {
             Result result = new Result();
-            using (var con = new SqlConnection(connectionString))
+            using (var con = this.GetConnection())
             {
                 con.Open();
-                //await con.Get(model);
+                var x = await con.GetAsync<T>(model.Id);
+                if (x != null)
+                {
+                    result.Data = new List<dynamic>() { x };
+                }
                 return result;
             }
         }

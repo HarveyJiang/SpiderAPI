@@ -24,30 +24,26 @@ namespace SpiderAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<JsonResult> Get()
+        public async Task<JsonResult> Get([FromBody] Condition condition)
         {
-            using (var con = new SqlConnection(connectionString))
+            var r = await TryAction(async () =>
             {
-                Result result = new Result();
-                con.Open();
-                int t = await con.InsertAsync(new SpiderStartUrls()
-                {
-                    Params = "111",
-                    Url = "g.cn"
-                });
-                result.Message = t.ToString();
-                return Json(result);
-            }
+                return await repository.GetList(condition);
+            });
 
-
-
+            return Json(r);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<JsonResult> Get(int id)
         {
-            return "value";
+            var r = await TryAction(async () =>
+            {
+                return await repository.Get(new SpiderBasic() { Id = id });
+            });
+
+            return Json(r);
         }
 
         // POST api/values
@@ -64,14 +60,26 @@ namespace SpiderAPI.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public async Task<JsonResult> Put([FromBody]SpiderBasic model)
         {
+            var r = await TryAction(async () =>
+            {
+                return await repository.UpdateAsync(model);
+            });
+
+            return Json(r);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<JsonResult> Delete(int id)
         {
+            var r = await TryAction(async () =>
+            {
+                return await repository.DeleteAsync(new SpiderBasic() { Id = id });
+            });
+
+            return Json(r);
         }
     }
 }
