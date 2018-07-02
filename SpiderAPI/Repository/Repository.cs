@@ -9,12 +9,16 @@ using SpiderAPI.Models;
 using Dapper.Contrib.Extensions;
 using System.Data;
 using MySql.Data.MySqlClient;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using NLog;
 
 namespace SpiderAPI.Repository
 {
     public class Repository<T> where T : BaseModel
     {
         public string connectionString;
+        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
         public Repository(IConfiguration configuration)
         {
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
@@ -94,36 +98,69 @@ namespace SpiderAPI.Repository
             }
         }
 
-        public async Task<Result> GetList(Condition condition)
+        public async Task<Result> GetListByPage(Condition condition)
         {
 
             List<T> products = new List<T>();
             Result result = new Result();
+
+            int pageSize = condition.Pagination["PageSize"] ?? 10;
+            pageSize = pageSize > 40 ? 10 : pageSize;
+            int pageIndex = (condition.Pagination["PageIndex"] ?? 1) - 1;
+
+            Func<T, bool> whereByFunc = null;
+
+            foreach (var item in condition.FieldAndKeyWord)
+            {
+                var p = typeof(T).GetProperty(item.Key);
+                whereByFunc = (t) => { return p.GetValue(t)?.ToString().Contains(item.Value) ?? false; };
+                break;
+            }
+
+            Func<T, string> orderByFunc = null;
+            var order = "asc";
+            foreach (var item in condition?.Sort)
+            {
+                if (item.Value == "desc")
+                {
+                    order = "desc";
+                }
+                orderByFunc = (t) => { return typeof(T).GetProperty(item.Key)?.GetValue(t)?.ToString(); };
+                break;
+            }
+
+
+
             using (var con = this.GetConnection())
             {
                 con.Open();
                 var x = await con.GetAllAsync<T>();
-                if (x != null)
-                    result.Data = x.ToList();
+                if (whereByFunc != null)
+                {
+                    x = x.Where(whereByFunc);
+                }
+                x = order == "asc" ? x.OrderBy(orderByFunc) : x.OrderByDescending(orderByFunc);
+                result.Data = x;
+                result.Count = x?.Count<T>();
                 return result;
             }
         }
 
-        public async Task<Result> Get(T model)
+        public async Task<Result> GetAsync(T model)
         {
             Result result = new Result();
             using (var con = this.GetConnection())
             {
                 con.Open();
                 var x = await con.GetAsync<T>(model.Id);
-                if (x != null)
-                {
-                    result.Data = new List<dynamic>() { x };
-                }
+                //if (x != null)
+                //{
+                //result.Data = new List<dynamic>() { x };
+                //}
+                result.Data = x;
                 return result;
             }
         }
-
 
     }
 }

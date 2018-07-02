@@ -13,9 +13,9 @@ using SpiderAPI.Models;
 namespace SpiderAPI.Controllers
 {
     [Route("api/[controller]/[action]")]
-    public class SpiderController : BaseController<SpiderBasic>
+    public class SpiderStartUrlsController : BaseController<SpiderStartUrls>
     {
-        public SpiderController(IConfiguration configuration) : base(configuration)
+        public SpiderStartUrlsController(IConfiguration configuration) : base(configuration)
         {
 
         }

@@ -108,21 +108,32 @@ namespace SpiderAPI.Models
     /// </summary>
     public class Result
     {
-        public IEnumerable<dynamic> Data { get; set; } = new List<dynamic>();
+        //public IEnumerable<dynamic> Data { get; set; } = new List<dynamic>();
+        public dynamic Data { get; set; }
         public bool Succeed { get; set; } = true;
         public string Message { get; set; } = "ok";
         public string StackTrace { get; set; } = "";
         /// <summary>
         /// 总条数
         /// </summary>
-        public int Count { get; set; } = 0;
+        public int? Count { get; set; } = 0;
 
     }
 
     public class Condition
     {
-        public int PageSize { get; set; } = 1;
-        public int PageIndex { get; set; } = 10;
-        public dynamic dynamic { get; set; }
+
+        public Dictionary<string, string> FieldAndKeyWord = new Dictionary<string, string>();
+        public Dictionary<string, int?> Pagination = new Dictionary<string, int?>();
+        public Dictionary<string, string> Sort = new Dictionary<string, string>();
+
+        public Condition()
+        {
+            Pagination.Add("PageSize", 10);
+            Pagination.Add("PageIndex", 1);
+            //Sort.Add("Id", "desc");
+        }
+
+
     }
 }
