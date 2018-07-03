@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using NLog;
 using SpiderAPI.Models;
 using System;
 using System.Collections.Generic;
@@ -15,13 +15,14 @@ namespace SpiderAPI.Controllers
     public class BaseController<T> : Controller where T : BaseModel, new()
     {
         protected string connectionString;
-        protected Repository.Repository<T> repository;
-        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
+        protected IRepository<T> repository;
+        protected readonly ILogger logger;
         protected Result result;
-        public BaseController(IConfiguration configuration)
+        public BaseController(IConfiguration configuration, ILoggerFactory loggerFactory, IRepository<T> _repository)
         {
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
-            repository = new Repository.Repository<T>(configuration);
+            repository = _repository;
+            logger = loggerFactory.CreateLogger(this.GetType().Name);
             result = new Result()
             {
                 Succeed = false,
@@ -83,7 +84,7 @@ namespace SpiderAPI.Controllers
                     Count = -1,
                     StackTrace = exception.StackTrace,
                 };
-                logger.Error($"Message:{exception.Message}\r\nStackTrace:{exception.StackTrace}");
+                logger.LogError($"Message:{exception.Message}\r\nStackTrace:{exception.StackTrace}");
                 return result;
             }
         }
@@ -115,6 +116,7 @@ namespace SpiderAPI.Controllers
             else
             {
                 result.Message = "参数错误。";
+                logger.LogError($"error Eessage:{result.Message}");
             }
             return Json(result);
         }

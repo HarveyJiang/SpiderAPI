@@ -11,17 +11,19 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using NLog;
+using Microsoft.Extensions.Logging;
 
-namespace SpiderAPI.Repository
+namespace SpiderAPI
 {
-    public class Repository<T> where T : BaseModel
+    public class Repository<T> : IRepository<T> where T : BaseModel, new()
     {
         public string connectionString;
-        protected readonly ILogger logger = LogManager.GetCurrentClassLogger();
-        public Repository(IConfiguration configuration)
+        protected readonly ILogger logger;
+        public Repository(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
+            logger = loggerFactory.CreateLogger(this.GetType().FullName);
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
+
         }
 
         public IDbConnection GetConnection()

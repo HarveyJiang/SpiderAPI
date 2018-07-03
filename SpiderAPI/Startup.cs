@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SpiderAPI.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace SpiderAPI
@@ -25,11 +26,11 @@ namespace SpiderAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddJsonOptions(options =>
-            {
-                options.SerializerSettings.Formatting = Formatting.Indented;
-            });
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("my_cors", builder => builder.WithOrigins("https://mysite.com"));
+            });
             //services.Configure<StorageOptions>(Configuration.GetSection("AzureStorageConfig"));
             //services.Configure<SiteConfig>(Configuration.GetSection("SiteConfig"));
             services.AddSingleton(Configuration);
@@ -41,6 +42,11 @@ namespace SpiderAPI
                 c.SwaggerDoc("v1", new Info { Title = "SPIDER API", Version = "v1", Description = "By Harvey" });
                 c.DescribeStringEnumsInCamelCase();
                 c.DescribeAllEnumsAsStrings();
+            });
+            services.AddTransient<IRepository<SpiderBasic>, Repository<SpiderBasic>>();
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.SerializerSettings.Formatting = Formatting.Indented;
             });
 
         }
@@ -59,7 +65,7 @@ namespace SpiderAPI
             }
             app.UseStaticFiles();
             app.UseMvc();
-            app.UseCors("cors");
+            app.UseCors("my_cors");
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
