@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NLog.Extensions.Logging;
 using SpiderAPI.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -74,6 +75,7 @@ namespace SpiderAPI
                 c.DocExpansion(DocExpansion.None);
             });
 
+            loggerFactory.AddNLog();
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 

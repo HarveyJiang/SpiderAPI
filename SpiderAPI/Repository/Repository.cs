@@ -21,7 +21,7 @@ namespace SpiderAPI
         protected readonly ILogger logger;
         public Repository(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
-            logger = loggerFactory.CreateLogger(this.GetType().FullName);
+            logger = loggerFactory.CreateLogger<T>();
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
 
         }
@@ -50,7 +50,7 @@ namespace SpiderAPI
                     Count = -1,
                     StackTrace = exception.StackTrace,
                 };
-                //_logger.Error(exception.StackTrace);
+                logger.LogError(exception, "TryAction Error.");
                 return result;
             }
         }

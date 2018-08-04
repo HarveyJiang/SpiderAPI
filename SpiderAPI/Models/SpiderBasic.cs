@@ -100,6 +100,7 @@ namespace SpiderAPI.Models
         [Write(false)]
         new public string Name { get; set; }
         public string Params { get; set; }
+        public string XPath { get; set; }
         public string Url { get; set; }
     }
 
@@ -117,6 +118,7 @@ namespace SpiderAPI.Models
         /// 总条数
         /// </summary>
         public int? Count { get; set; } = 0;
+        
 
     }
 

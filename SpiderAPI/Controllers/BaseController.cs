@@ -22,7 +22,7 @@ namespace SpiderAPI.Controllers
         {
             connectionString = configuration.GetSection("ConnectionString").GetSection("MySQL").Value;
             repository = _repository;
-            logger = loggerFactory.CreateLogger(this.GetType().Name);
+            logger = loggerFactory.CreateLogger<T>();
             result = new Result()
             {
                 Succeed = false,
