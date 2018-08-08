@@ -14,13 +14,23 @@ using SpiderAPI.Models;
 
 namespace SpiderAPI.Controllers
 {
-    [Route("api/[controller]/[action]")]
+
+    [Route("api/spider_starturl")]
     public class SpiderStartUrlsController : BaseController<SpiderStartUrls>
     {
+
         public SpiderStartUrlsController(IConfiguration configuration, ILoggerFactory loggerFactory, IRepository<SpiderStartUrls> _repository) :
             base(configuration, loggerFactory, _repository)
         {
 
+
+        }
+
+        [HttpGet("spider/{spiderId:int}/starturls")]
+        public async Task<JsonResult> GetUrlsBySpiderId(int spiderId, [FromQuery] Condition<SpiderStartUrls> condition)
+        {
+            condition.Query = m => m.SpiderId == spiderId; 
+            return await CommonAction(ActionType.GETLISTBYQUERY, condition);
         }
     }
 }

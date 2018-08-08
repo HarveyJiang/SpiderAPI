@@ -57,19 +57,19 @@ namespace SpiderAPI
 
         public async Task<Result> InsertAsync(T model)
         {
-            Result result = new Result();
+            Result result = new Result() { Message = "添加成功。" };
             using (var con = this.GetConnection())
             {
                 con.Open();
                 int t = await con.InsertAsync(model);
-                result.Message = t.ToString();
+                result.Data = t.ToString();
                 return result;
             }
         }
 
         public async Task<Result> DeleteAsync(T model)
         {
-            Result result = new Result();
+            Result result = new Result() { Message = "删除成功。" };
             using (var con = this.GetConnection())
             {
                 con.Open();
@@ -91,7 +91,7 @@ namespace SpiderAPI
 
         public async Task<Result> UpdateAsync(T model)
         {
-            Result result = new Result();
+            Result result = new Result() { Message = "更新成功。" };
             using (var con = this.GetConnection())
             {
                 con.Open();
@@ -100,35 +100,55 @@ namespace SpiderAPI
             }
         }
 
-        public async Task<Result> GetListByPage(Condition condition)
+        public async Task<Result> GetListByPage(Condition<T> condition)
         {
-
             List<T> products = new List<T>();
-            Result result = new Result();
+            Result result = new Result() { Message = "" };
+            int limit = condition.Limit > 40 ? 10 : condition.Limit;
+            int offset = condition.Offset;
+            List<Func<T, bool>> wheres = new List<Func<T, bool>>();
 
-            int pageSize = condition.Pagination["PageSize"] ?? 10;
-            pageSize = pageSize > 40 ? 10 : pageSize;
-            int pageIndex = (condition.Pagination["PageIndex"] ?? 1) - 1;
-
-            Func<T, bool> whereByFunc = null;
-
-            foreach (var item in condition.FieldAndKeyWord)
+            if (condition.Query != null)
             {
-                var p = typeof(T).GetProperty(item.Key);
-                whereByFunc = (t) => { return p.GetValue(t)?.ToString().Contains(item.Value) ?? false; };
-                break;
+                wheres.Add(condition.Query);
             }
-
-            Func<T, string> orderByFunc = null;
-            var order = "asc";
-            foreach (var item in condition?.Sort)
+            else if (!string.IsNullOrEmpty(condition.Key))
             {
-                if (item.Value == "desc")
+                var fields = condition?.Fields?.Split(',') ?? new string[] { };
+                foreach (var field in fields)
                 {
-                    order = "desc";
+                    var p = typeof(T).GetProperty(field);
+                    if (p != null)
+                    {
+                        wheres.Add((t) =>
+                        {
+                            return p.GetValue(t)?.ToString()?.Contains(condition.Key) ?? false;
+                        });
+                    }
+                    else
+                    {
+                        logger.LogWarning(string.Format("field '{0}' not found, search is invalid", field));
+                    }
                 }
-                orderByFunc = (t) => { return typeof(T).GetProperty(item.Key)?.GetValue(t)?.ToString(); };
-                break;
+            }
+            List<Dictionary<string, Func<T, string>>> orders = new List<Dictionary<string, Func<T, string>>>();
+            var sorts = condition?.Sorts?.Split(',') ?? new string[] { "Id" };
+            foreach (var sort in sorts)
+            {
+                var d = new Dictionary<string, Func<T, string>>();
+                var sf = sort.TrimStart('+', '-');
+                d.Add(sort.StartsWith("+") ? "asc" : "desc",
+                    (t) =>
+                    {
+                        var p = typeof(T).GetProperty(sf);
+                        if (p == null)
+                        {
+                            logger.LogWarning(string.Format("field:'{0}' not found,sort is invalid.", sf));
+                            return null;
+                        }
+                        return typeof(T).GetProperty(sf)?.GetValue(t)?.ToString();
+                    });
+                orders.Add(d);
             }
 
 
@@ -137,20 +157,28 @@ namespace SpiderAPI
             {
                 con.Open();
                 var x = await con.GetAllAsync<T>();
-                if (whereByFunc != null)
+                foreach (var w in wheres)
                 {
-                    x = x.Where(whereByFunc);
+                    x = x.Where(w);
                 }
-                x = order == "asc" ? x.OrderBy(orderByFunc) : x.OrderByDescending(orderByFunc);
-                result.Data = x;
-                result.Count = x?.Count<T>();
+                foreach (var o in orders)
+                {
+                    foreach (var item in o)
+                    {
+                        x = item.Key == "asc" ? x.OrderBy(item.Value) : x.OrderByDescending(item.Value);
+                    }
+                }
+                //x = x.OrderByDescending(m => m.Id);
+                result.Count = x.Count();
+                x = x.Skip(offset).Take(limit);
+                result.Data = x.ToList();
                 return result;
             }
         }
 
         public async Task<Result> GetAsync(T model)
         {
-            Result result = new Result();
+            Result result = new Result() { Message = "" };
             using (var con = this.GetConnection())
             {
                 con.Open();
@@ -164,5 +192,11 @@ namespace SpiderAPI
             }
         }
 
+        public Task<Result> GetListByQuery(Condition<T> condition)
+        {
+            return GetListByPage(condition);
+        }
     }
+
+
 }

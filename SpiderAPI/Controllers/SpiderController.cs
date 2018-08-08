@@ -14,13 +14,13 @@ using SpiderAPI.Models;
 
 namespace SpiderAPI.Controllers
 {
-    [Route("api/[controller]/[action]")]
-    public class SpiderController : BaseController<SpiderBasic>
+    [Route("api/spider")]
+    public class SpiderController : BaseController<Spider>
     {
-        public SpiderController(IConfiguration configuration, ILoggerFactory loggerFactory, IRepository<SpiderBasic> _repository) :
+        public SpiderController(IConfiguration configuration, ILoggerFactory loggerFactory, IRepository<Spider> _repository) :
             base(configuration, loggerFactory, _repository)
         {
-            logger.LogError("mytest");
+            
         }
     }
 }

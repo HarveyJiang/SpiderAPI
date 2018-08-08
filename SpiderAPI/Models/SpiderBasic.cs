@@ -1,4 +1,6 @@
 ﻿using Dapper.Contrib.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,12 +29,13 @@ namespace SpiderAPI.Models
         }
 
     }
-    [Table("spider_basic")]
-    public class SpiderBasic : BaseModel
+    [Table("spider")]
+    public class Spider : BaseModel
     {
         //public int Id { get; set; }
         //public string Name { get; set; }
-        public string Domain { get; set; }
+        public bool AllowedDomain { get; set; } = false;
+        public string Domains { get; set; }
         public SpiderTypeEnum SpiderType { get; set; } = SpiderTypeEnum.SINGE_PAGE;
         public bool IsDuplicate { get; set; }
         public bool IsProxy { get; set; }
@@ -42,18 +45,14 @@ namespace SpiderAPI.Models
         public bool IsScheduled { get; set; }
         public string CronExpression { get; set; }
         public string Tags { get; set; }
-        public int ScrapySettingId { get; set; }
-        public int SpiderStartUrlsId { get; set; }
-        public string Status { get; set; }
+        public string ScrapySettings { get; set; }
+        public SpiderStatusEnum Status { get; set; } = SpiderStatusEnum.NEW;
         [Write(false)]
-        public ScrapySetting ScrapySetting { get; set; }
-        [Write(false)]
-        public ScrapySetting SpiderStartUrls { get; set; }
+        public List<SpiderStartUrls> SpiderStartUrls { get; set; }
 
-        public SpiderBasic()
+        public Spider()
         {
-            ScrapySetting = new ScrapySetting();
-            SpiderStartUrls = new ScrapySetting();
+            SpiderStartUrls = new List<SpiderStartUrls>();
         }
 
         public enum SpiderTypeEnum
@@ -74,6 +73,15 @@ namespace SpiderAPI.Models
             /// API 接口
             /// </summary>
             API_PAGE = 4
+        }
+
+        public enum SpiderStatusEnum
+        {
+            NEW,
+            RUNNING,
+            STOP,
+            FINISHED,
+            EXCEPTION
         }
     }
     [Table("scrapy_setting")]
@@ -97,11 +105,13 @@ namespace SpiderAPI.Models
     [Table("spider_start_urls")]
     public class SpiderStartUrls : BaseModel
     {
-        [Write(false)]
-        new public string Name { get; set; }
-        public string Params { get; set; }
-        public string XPath { get; set; }
         public string Url { get; set; }
+        public string RequestMethod { get; set; }
+        public string RequestEncoding { get; set; }
+        public string RequestParams { get; set; }
+        public string FieldsParams { get; set; }
+        public int SpiderId { get; set; }
+
     }
 
     /// <summary>
@@ -112,30 +122,45 @@ namespace SpiderAPI.Models
         //public IEnumerable<dynamic> Data { get; set; } = new List<dynamic>();
         public dynamic Data { get; set; }
         public bool Succeed { get; set; } = true;
-        public string Message { get; set; } = "ok";
+        [JsonConverter(typeof(StringEnumConverter))]
+        public MessageTypeEnum MessageType { get; set; } = MessageTypeEnum.success;
+        public string Message { get; set; } = "执行成功。";
         public string StackTrace { get; set; } = "";
         /// <summary>
         /// 总条数
         /// </summary>
         public int? Count { get; set; } = 0;
-        
+
+
+        public enum MessageTypeEnum
+        {
+            success,
+            warning,
+            info,
+            error,
+        }
 
     }
 
-    public class Condition
+    public class Page<T>
     {
+        public long CurrentPage { get; set; }
+        public long TotalPages { get; set; }
+        public long TotalItems { get; set; }
+        public long ItemsPerPage { get; set; }
+        public List<T> Items { get; set; }
+    }
 
-        public Dictionary<string, string> FieldAndKeyWord = new Dictionary<string, string>();
-        public Dictionary<string, int?> Pagination = new Dictionary<string, int?>();
-        public Dictionary<string, string> Sort = new Dictionary<string, string>();
 
-        public Condition()
-        {
-            Pagination.Add("PageSize", 10);
-            Pagination.Add("PageIndex", 1);
-            //Sort.Add("Id", "desc");
-        }
 
+    public class Condition<T>
+    {
+        public int Offset { get; set; } = 0;
+        public int Limit { get; set; } = 10;
+        public string Sorts { get; set; }
+        public string Key { get; set; }
+        public string Fields { get; set; }
+        public Func<T, bool> Query { get; set; }
 
     }
 }

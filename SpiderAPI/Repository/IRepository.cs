@@ -11,7 +11,8 @@ namespace SpiderAPI
         Task<Result> DeleteAsync(T model);
         Task<Result> DeleteAllAsync(T model);
         Task<Result> UpdateAsync(T model);
-        Task<Result> GetListByPage(Condition condition);
+        Task<Result> GetListByPage(Condition<T> condition);
+        Task<Result> GetListByQuery(Condition<T> condition);
         Task<Result> GetAsync(T model);
 
         //IEnumerator<T> GetList(Condition condition);

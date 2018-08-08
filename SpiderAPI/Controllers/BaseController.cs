@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using SpiderAPI.Models;
 using System;
 using System.Collections.Generic;
@@ -26,21 +30,42 @@ namespace SpiderAPI.Controllers
             result = new Result()
             {
                 Succeed = false,
+                MessageType = Result.MessageTypeEnum.error,
                 Count = -1,
                 Message = "fail",
             };
         }
-
-        // GET api/values
-        [HttpPost]
-        public async Task<JsonResult> GetListByPage([FromBody] Condition condition)
+        [NonAction]
+        public override JsonResult Json(object data)
         {
+            var jss = new JsonSerializerSettings()
+            {
+                Formatting = Formatting.Indented,
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                DateFormatString = "yyyy-MM-dd hh:mm:ss",
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                DateParseHandling = DateParseHandling.None,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            };
+            //jss.Converters.Add(new StringEnumConverter());
+            return base.Json(data, jss);
+        }
 
-            return await CommonAction(ActionType.GETBYPAGE, condition);
+        //sort_by=desc(email) sort_by=desc(last_modified),asc(email)
+        //X-Total-Count
+        [HttpGet("search")]
+        //[HttpGet("search?limit={number}&offset=20")]
+        public async Task<JsonResult> GetListByPage([FromQuery] Condition<T> condition)
+        {
+            JsonResult r = await CommonAction(ActionType.GETLISTBYPAGE, condition);
+            //dynamic d = r.Value;
+            //HttpContext.Response.Headers.Add("X-Total-Count", d.Count);
+            return r;
         }
 
         // GET api/values/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<JsonResult> GetById(int id)
         {
             return await CommonAction(ActionType.GETBYID, new T() { Id = id });
@@ -54,17 +79,27 @@ namespace SpiderAPI.Controllers
         }
 
         // PUT api/values/5
-        [HttpPut("{id}")]
+        [HttpPut]
         public async Task<JsonResult> Put([FromBody]T model)
         {
             return await CommonAction(ActionType.UPDATE, model);
         }
 
+        [HttpPatch("update")]
+        public async Task<JsonResult> Patch(int id, [FromBody]JsonPatchDocument<T> modelPatch)
+        {
+            var r = await GetById(id);
+            T instantce = r.Value as T;
+            modelPatch.ApplyTo(instantce);
+            return await CommonAction(ActionType.UPDATE, modelPatch);
+        }
+
+
         // DELETE api/values/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:min(1)}")]
         public async Task<JsonResult> Delete(int id)
         {
-            return await CommonAction(ActionType.GETBYID, new T() { Id = id });
+            return await CommonAction(ActionType.DELETE, new T() { Id = id });
         }
 
 
@@ -80,6 +115,7 @@ namespace SpiderAPI.Controllers
                 Result result = new Result()
                 {
                     Message = exception.Message,
+                    MessageType = Result.MessageTypeEnum.error,
                     Succeed = false,
                     Count = -1,
                     StackTrace = exception.StackTrace,
@@ -105,8 +141,12 @@ namespace SpiderAPI.Controllers
                             return await repository.UpdateAsync(model);
                         case ActionType.GETBYID:
                             return await repository.GetAsync(model);
-                        case ActionType.GETBYPAGE:
+                        case ActionType.GETLISTBYPAGE:
+                            //model is condition
                             return await repository.GetListByPage(model);
+                        case ActionType.GETLISTBYQUERY:
+                            //model is condition
+                            return await repository.GetListByQuery(model);
                         default:
                             result.Message = $"暂不支持{actionType}。";
                             return result;
@@ -128,7 +168,8 @@ namespace SpiderAPI.Controllers
         DELETE = 2,
         UPDATE = 3,
         GETBYID = 4,
-        GETBYPAGE = 5,
+        GETLISTBYPAGE = 5,
+        GETLISTBYQUERY = 6,
     }
 }
 

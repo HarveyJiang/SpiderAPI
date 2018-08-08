@@ -28,10 +28,18 @@ namespace SpiderAPI
         public void ConfigureServices(IServiceCollection services)
         {
 
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("my_cors", builder => builder.WithOrigins("https://mysite.com"));
+            //});
             services.AddCors(options =>
             {
-                options.AddPolicy("my_cors", builder => builder.WithOrigins("https://mysite.com"));
-            });
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+        });
             //services.Configure<StorageOptions>(Configuration.GetSection("AzureStorageConfig"));
             //services.Configure<SiteConfig>(Configuration.GetSection("SiteConfig"));
             services.AddSingleton(Configuration);
@@ -44,7 +52,8 @@ namespace SpiderAPI
                 c.DescribeStringEnumsInCamelCase();
                 c.DescribeAllEnumsAsStrings();
             });
-            services.AddTransient<IRepository<SpiderBasic>, Repository<SpiderBasic>>();
+            services.AddTransient<IRepository<Spider>, Repository<Spider>>();
+            services.AddTransient<IRepository<SpiderStartUrls>, Repository<SpiderStartUrls>>();
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.Formatting = Formatting.Indented;
@@ -65,8 +74,9 @@ namespace SpiderAPI
                 app.UseExceptionHandler("/Error");
             }
             app.UseStaticFiles();
-            app.UseMvc();
-            app.UseCors("my_cors");
+            app.UseCors("CorsPolicy");
+            
+            
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -79,6 +89,7 @@ namespace SpiderAPI
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseMvc();
         }
     }
 
