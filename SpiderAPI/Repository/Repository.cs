@@ -100,7 +100,7 @@ namespace SpiderAPI
             }
         }
 
-        public async Task<Result> GetListByPage(Condition<T> condition)
+        public async Task<Result> GetListByPage(Condition<T> condition, Func<T, bool> query = null)
         {
             List<T> products = new List<T>();
             Result result = new Result() { Message = "" };
@@ -108,9 +108,9 @@ namespace SpiderAPI
             int offset = condition.Offset;
             List<Func<T, bool>> wheres = new List<Func<T, bool>>();
 
-            if (condition.Query != null)
+            if (query != null)
             {
-                wheres.Add(condition.Query);
+                wheres.Add(query);
             }
             else if (!string.IsNullOrEmpty(condition.Key))
             {
@@ -192,9 +192,9 @@ namespace SpiderAPI
             }
         }
 
-        public Task<Result> GetListByQuery(Condition<T> condition)
+        public Task<Result> GetListByQuery(Condition<T> condition, Func<T, bool> query)
         {
-            return GetListByPage(condition);
+            return GetListByPage(condition, query);
         }
     }
 

@@ -125,7 +125,7 @@ namespace SpiderAPI.Controllers
             }
         }
         [NonAction]
-        public async Task<JsonResult> CommonAction(ActionType actionType, dynamic model)
+        public async Task<JsonResult> CommonAction(ActionType actionType, dynamic model, Func<T, bool> where = null)
         {
             if (ModelState.IsValid)
             {
@@ -146,7 +146,7 @@ namespace SpiderAPI.Controllers
                             return await repository.GetListByPage(model);
                         case ActionType.GETLISTBYQUERY:
                             //model is condition
-                            return await repository.GetListByQuery(model);
+                            return await repository.GetListByQuery(model,where);
                         default:
                             result.Message = $"暂不支持{actionType}。";
                             return result;

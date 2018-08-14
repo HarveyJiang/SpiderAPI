@@ -29,8 +29,8 @@ namespace SpiderAPI.Controllers
         [HttpGet("spider/{spiderId:int}/starturls")]
         public async Task<JsonResult> GetUrlsBySpiderId(int spiderId, [FromQuery] Condition<SpiderStartUrls> condition)
         {
-            condition.Query = m => m.SpiderId == spiderId; 
-            return await CommonAction(ActionType.GETLISTBYQUERY, condition);
+            Func<SpiderStartUrls, bool> query = m => m.SpiderId == spiderId;
+            return await CommonAction(ActionType.GETLISTBYQUERY, condition, query);
         }
     }
 }

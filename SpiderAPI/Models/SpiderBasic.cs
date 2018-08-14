@@ -160,7 +160,7 @@ namespace SpiderAPI.Models
         public string Sorts { get; set; }
         public string Key { get; set; }
         public string Fields { get; set; }
-        public Func<T, bool> Query { get; set; }
+        
 
     }
 }
