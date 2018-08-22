@@ -109,7 +109,10 @@ namespace SpiderAPI.Models
         public string RequestMethod { get; set; }
         public string RequestEncoding { get; set; }
         public string RequestParams { get; set; }
-        public string FieldsParams { get; set; }
+        public string ListFields { get; set; }
+        public string DetailFields { get; set; }
+        public string ListInfo { get; set; }
+        public string PageInfo { get; set; }
         public int SpiderId { get; set; }
 
     }
@@ -160,7 +163,7 @@ namespace SpiderAPI.Models
         public string Sorts { get; set; }
         public string Key { get; set; }
         public string Fields { get; set; }
-        
+
 
     }
 }
